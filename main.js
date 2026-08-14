@@ -381,7 +381,25 @@ async function createPaste(file) {
             images: []
         });
 
-        showCreateResult(data);
+        success("Paste created!");
+
+        // Try common URL fields returned by APIs
+        const pasteId =
+            data.id ||
+            data.paste_id ||
+            data.pasteId ||
+            data.custom_id ||
+            data.customId;
+
+        if (data.url) {
+            console.log(data.url);
+        } else if (pasteId) {
+            console.log(
+                `https://pastedb.netlify.app/paste/${pasteId}`
+            );
+        } else {
+            print(data);
+                }
 
     } catch (err) {
         handleError(err);
