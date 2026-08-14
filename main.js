@@ -1,8 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 
-// If your SDK is in another file, change this path.
-// Example: ./sdk.js
 const { Client, PasteDBError } = require("./sdk");
 
 const client = new Client(
