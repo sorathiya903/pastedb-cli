@@ -23,6 +23,44 @@ async function ask(question) {
     });
 }
 
+async function uploadTextPaste(content) {
+
+    try {
+
+        console.log("\nUploading text...");
+
+        const data = await client.apiCreatePaste({
+            title: "Untitled",
+            content,
+            language: "text",
+            images: []
+        });
+
+        success("Text Uploaded!");
+
+        // Try common URL fields returned by APIs
+        const pasteId =
+            data.id ||
+            data.paste_id ||
+            data.pasteId ||
+            data.custom_id ||
+            data.customId;
+
+        if (data.url) {
+            console.log(data.url);
+        } else if (pasteId) {
+            console.log(
+                `https://pastedb.netlify.app/paste/${pasteId}`
+            );
+        } else {
+            print(data);
+            }
+
+    } catch (err) {
+        handleError(err);
+    }
+}
+
 async function auth() {
     console.log("");
     console.log("PasteDB CLI Authentication");
@@ -65,6 +103,8 @@ async function auth() {
         console.error(err.message);
     }
                                  }
+
+
 
 function getApiKey() {
     // Environment variable takes priority
