@@ -19,68 +19,89 @@ A fast, lightweight, and modern command-line interface for PasteDB — create, r
 ## 📦 Installation
 Ensure you have Node.js 18+ installed on your system.
 
+```
 npm install -g pastedb-cli
+```
 
 Verify that the installation was successful:
 
+```
 pdb --version
+```
 
 ------------------------------
 ## 🔐 Authentication
 Before using API-dependent features, authenticate your terminal client.
 
+```
 pdb auth
+```
 
 You will see the following interactive prompt:
 
+```
 PasteDB CLI Authentication
 --------------------------
 PasteDB API key: 
+```
 
 Once entered, your configuration updates:
 
+```
 ✓ API key saved. You can now use PasteDB CLI commands.
+```
 
 ## Storage and Environment Variables
 
 * Local Storage: Your token resides locally at ~/.pastedb/config.json.
 * Environment Overrides: You can export your key directly to your environment:
 
-export PASTEDB_API_KEY="your_api_key"
-
-Note: The PASTEDB_API_KEY environment variable always takes priority over your saved configuration file.
-
 ------------------------------
-## 🚀 Commands## 📤 Create a Paste
+## 🚀 Commands
+
+## 📤 Create a Paste
 Upload a local file to PasteDB. The language syntax is automatically detected via the file extension.
 
+```
 pdb create app.py
-
+```
 Output:
 
+```
 Uploading app.py...
 ✓ Paste created! https://pastedb.netlify.app/paste/abc123
+```
 
 Supported syntax extensions include: .js, .py, .html, .css, .json, .md, .java, .cpp, .c, .go, .rs, .php, .rb, .sh, .sql, .xml, .yaml.
+
 ## 📥 Get a Paste
 Print the raw contents of a specific paste directly to stdout.
 
+```
 pdb get abc123
+```
 
 ## ✏️ Update a Paste
 Overwrite an existing paste's content, language settings, and title with a local file.
 
+```
 pdb update abc123 app.py
+```
+Note: In the example, the abc123 is the pasteID which is to be updated and app.py is the file whose content will be replaced from the abc123.
 
 ## 🗑️ Delete a Paste
 Remove a paste permanently from the server.
 
+```
 pdb delete abc123
+```
 
 Output:
 
+```
 Deleting abc123...
 ✓ Paste deleted.
+```
 
 ## 🌎 Explore Public Pastes
 Browse through trending and public feeds natively inside your terminal window.
