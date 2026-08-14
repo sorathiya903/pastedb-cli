@@ -1,12 +1,89 @@
 const fs = require("fs");
 const path = require("path");
-
+const readline = require("readline");
 const { Client, PasteDBError } = require("./sdk");
+const os = require("os");
 
-const client = new Client(
-    process.env.PASTEDB_API_KEY || null
-);
 
+
+const configDir = path.join(os.homedir(), ".pastedb");
+const configFile = path.join(configDir, "config.json");
+
+async function ask(question) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise(resolve => {
+        rl.question(question, answer => {
+            rl.close();
+            resolve(answer.trim());
+        });
+    });
+}
+
+async function auth() {
+    console.log("");
+    console.log("PasteDB CLI Authentication");
+    console.log("--------------------------");
+    console.log("");
+
+    const apiKey = await ask("PasteDB API key: ");
+
+    if (!apiKey) {
+        console.log("");
+        console.log("✗ No API key provided.");
+        return;
+    }
+
+    try {
+        fs.mkdirSync(configDir, { recursive: true });
+
+        fs.writeFileSync(
+            configFile,
+            JSON.stringify(
+                {
+                    apiKey: apiKey
+                },
+                null,
+                2
+            ),
+            {
+                mode: 0o600
+            }
+        );
+
+        console.log("");
+        console.log("✓ API key saved.");
+        console.log("You can now use PasteDB CLI commands.");
+        console.log("");
+
+    } catch (err) {
+        console.error("");
+        console.error("✗ Failed to save API key.");
+        console.error(err.message);
+    }
+                                 }
+
+function getApiKey() {
+    // Environment variable takes priority
+    if (process.env.PASTEDB_API_KEY) {
+        return process.env.PASTEDB_API_KEY;
+    }
+
+    try {
+        const config = JSON.parse(
+            fs.readFileSync(configFile, "utf8")
+        );
+
+        return config.apiKey || null;
+    } catch {
+        return null;
+    }
+}
+
+const client = new Client(getApiKey());
 
 // ─────────────────────────────────────────────
 // Helpers
