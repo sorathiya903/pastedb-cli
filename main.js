@@ -207,7 +207,7 @@ async function createPaste(file) {
             console.log(data.url);
         } else if (pasteId) {
             console.log(
-                `https://pastedb.netlify.app/p/${pasteId}`
+                `https://pastedb.netlify.app/paste/${pasteId}`
             );
         } else {
             print(data);
@@ -562,7 +562,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.0.2");
+    console.log("PasteDB CLI v0.0.4");
 }
 
 
