@@ -788,7 +788,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.0.9");
+    console.log("PasteDB CLI v0.1.0");
 }
 
 
