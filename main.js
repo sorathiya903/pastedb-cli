@@ -3,7 +3,7 @@ const path = require("path");
 const readline = require("readline");
 const { Client, PasteDBError } = require("./sdk");
 const os = require("os");
-
+const { execFileSync } = require("child_process");
 
 
 const configDir = path.join(os.homedir(), ".pastedb");
@@ -157,6 +157,171 @@ function getLanguage(filename) {
     return languages[ext] || "text";
 }
 
+async function getClipboardText() {
+    try {
+        // Android / Termux
+        if (process.platform === "android" || fs.existsSync("/data/data/com.termux")) {
+            return execFileSync(
+                "termux-clipboard-get",
+                { encoding: "utf8" }
+            );
+        }
+
+        // macOS
+        if (process.platform === "darwin") {
+            return execFileSync(
+                "pbpaste",
+                { encoding: "utf8" }
+            );
+        }
+
+        // Windows
+        if (process.platform === "win32") {
+            return execFileSync(
+                "powershell",
+                [
+                    "-NoProfile",
+                    "-Command",
+                    "Get-Clipboard"
+                ],
+                { encoding: "utf8" }
+            );
+        }
+
+        // Linux
+        try {
+            return execFileSync(
+                "xclip",
+                ["-selection", "clipboard", "-o"],
+                { encoding: "utf8" }
+            );
+        } catch {}
+
+        try {
+            return execFileSync(
+                "xsel",
+                ["--clipboard", "--output"],
+                { encoding: "utf8" }
+            );
+        } catch {}
+
+        throw new Error("Clipboard access is not available.");
+    } catch (err) {
+        throw new Error(
+            "Could not read clipboard. " +
+            "On Termux, install Termux:API and run: " +
+            "pkg install termux-api"
+        );
+    }
+}
+
+
+async function chooseCreateSource() {
+
+    console.log("");
+    console.log("What do you want to upload?");
+    console.log("");
+    console.log("  1) File");
+    console.log("  2) Raw text");
+    console.log("  3) Clipboard");
+    console.log("");
+
+    const choice = await ask("Choose an option [1-3]: ");
+
+    if (choice === "1") {
+
+        const file = await ask(
+            "\nWhich file do you want to upload?\n> "
+        );
+
+        if (!file) {
+            error("No file specified.");
+            return;
+        }
+
+        return {
+            type: "file",
+            value: file
+        };
+    }
+
+    if (choice === "2") {
+
+        console.log("");
+        console.log("Enter the text you want to upload.");
+        console.log("Press Ctrl+D when finished.");
+        console.log("");
+
+        const lines = [];
+
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+
+        for await (const line of rl) {
+            lines.push(line);
+        }
+
+        rl.close();
+
+        const text = lines.join("\n");
+
+        if (!text.trim()) {
+            error("No text entered.");
+            return;
+        }
+
+        return {
+            type: "text",
+            value: text
+        };
+    }
+
+    if (choice === "3") {
+
+        let clipboard;
+
+        try {
+            clipboard = await getClipboardText();
+        } catch (err) {
+            error(err.message);
+            return;
+        }
+
+        if (!clipboard.trim()) {
+            error("Clipboard is empty.");
+            return;
+        }
+
+        console.log("");
+        console.log("Clipboard snapshot:");
+        console.log("");
+        console.log("────────────────────────────────");
+
+        console.log(clipboard);
+
+        console.log("────────────────────────────────");
+        console.log("");
+
+        const confirm = await ask(
+            "Press Enter to upload this clipboard content, or type 'n' to cancel: "
+        );
+
+        if (confirm.toLowerCase() === "n") {
+            console.log("\nCancelled.\n");
+            return;
+        }
+
+        return {
+            type: "text",
+            value: clipboard
+        };
+    }
+
+    error("Invalid option. Please choose 1, 2, or 3.");
+}
+
 
 // ─────────────────────────────────────────────
 // Commands
@@ -164,9 +329,32 @@ function getLanguage(filename) {
 
 async function createPaste(file) {
 
+    // ==========================================
+    // INTERACTIVE MODE
+    // ==========================================
+
     if (!file) {
-        return error("Please provide a file.\nExample: pdb create app.py");
+
+        const source = await chooseCreateSource();
+
+        if (!source) {
+            return;
+        }
+
+        // File selected
+        if (source.type === "file") {
+            return createPaste(source.value);
+        }
+
+        // Raw text / clipboard
+        return uploadTextPaste(source.value);
     }
+
+
+    // ==========================================
+    // NORMAL FILE MODE
+    // pdb create app.js
+    // ==========================================
 
     if (!fs.existsSync(file)) {
         return error(`File not found: ${file}`);
@@ -190,35 +378,15 @@ async function createPaste(file) {
             title,
             content,
             language,
-            images:[]
+            images: []
         });
 
-        success("Paste created!");
-
-        // Try common URL fields returned by APIs
-        const pasteId =
-            data.id ||
-            data.paste_id ||
-            data.pasteId ||
-            data.custom_id ||
-            data.customId;
-
-        if (data.url) {
-            console.log(data.url);
-        } else if (pasteId) {
-            console.log(
-                `https://pastedb.netlify.app/paste/${pasteId}`
-            );
-        } else {
-            print(data);
-        }
+        showCreateResult(data);
 
     } catch (err) {
         handleError(err);
     }
 }
-
-
 async function getPaste(id) {
 
     if (!id) {
@@ -562,7 +730,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.0.4");
+    console.log("PasteDB CLI v0.0.5");
 }
 
 
