@@ -116,9 +116,12 @@ Before uploading, PasteDB shows you exactly what will be uploaded:
 
 Clipboard content:
 
+Example 
+```
 ------------------------------
 print("Hello from PasteDB!")
 ------------------------------
+```
 
 Press Ctrl+D to upload this content.
 
