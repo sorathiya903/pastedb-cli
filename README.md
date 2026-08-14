@@ -166,31 +166,27 @@ pdb key delete <api-key>   # Delete a key
 Get involved with development or build the package from source:
 
    1. Clone the repository:
-   
-   git clone https://github.com/sorathiya903/PasteDB.git
-   
+
+   ```
+   git clone https://github.com/sorathiya903/pastedb-cli.git
+   ```
+
    2. Navigate to the project root:
-   
-   cd PasteDB
-   
-   3. Install the dependencies:
+
+   ```
+   cd pastedb-cli
+   ```
+   3. Install the dependencies(if added in future):
    
    npm install
    
    4. Run the CLI tool locally:
    
+   ```
    node main.js
-   
+   ```
    
 ------------------------------
 ## 📄 License
 Distributed under the MIT License. See the LICENSE file for more details.
 ------------------------------
-If you'd like to make this README even better, let me know:
-
-* Do you want to add code block styling or specific theme colors to the output text examples?
-* Should we include a Troubleshooting section for common Node or path errors?
-* Do you have a project logo image URL we can add to the header?
-
-I can update the markdown file structure based on what you need next!
-
