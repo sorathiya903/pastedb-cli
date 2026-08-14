@@ -72,6 +72,57 @@ Uploading app.py...
 ✓ Paste created! https://pastedb.netlify.app/paste/abc123
 ```
 
+## 🧭 Interactive Create
+
+Don't want to specify a file directly? Just run:
+
+```bash
+pdb create
+```
+
+PasteDB opens an interactive creation flow:
+
+```
+What do you want to upload?
+
+❯ File
+  Raw text
+  First item from clipboard
+```
+### 📁 File
+
+Choose File to upload a local file (Enter File name).
+
+```
+? Which file do you want to upload?
+❯ app.py
+```
+
+### 📝 Raw Text
+
+Choose Raw text when you want to create a paste directly from text entered in the terminal.
+
+```
+? Enter your raw text:
+```
+
+Enter your content and press Ctrl+D when you're finished.
+
+### 📋 Clipboard
+
+Choose First item from clipboard to upload the current clipboard content.
+
+Before uploading, PasteDB shows you exactly what will be uploaded:
+
+Clipboard content:
+
+------------------------------
+print("Hello from PasteDB!")
+------------------------------
+
+Press Ctrl+D to upload this content.
+
+
 Supported syntax extensions include: .js, .py, .html, .css, .json, .md, .java, .cpp, .c, .go, .rs, .php, .rb, .sh, .sql, .xml, .yaml.
 
 ## 📥 Get a Paste
