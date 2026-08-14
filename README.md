@@ -189,8 +189,10 @@ Get involved with development or build the package from source:
    cd pastedb-cli
    ```
    3. Install the dependencies(if added in future):
-   
+
+   ```
    npm install
+   ```
    
    4. Run the CLI tool locally:
    
