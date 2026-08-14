@@ -106,12 +106,16 @@ Deleting abc123...
 ## 🌎 Explore Public Pastes
 Browse through trending and public feeds natively inside your terminal window.
 
+```
 pdb explore
+```
 
 ## 👤 Account Details
 Check your active profile data and current PasteDB user statistics.
 
+```
 pdb me
+```
 
 ## ▶️ Run Code
 Execute code snippets using PasteDB's remote code runtime engine.
