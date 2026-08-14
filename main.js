@@ -189,7 +189,8 @@ async function createPaste(file) {
         const data = await client.apiCreatePaste({
             title,
             content,
-            language
+            language,
+            images:[]
         });
 
         success("Paste created!");
