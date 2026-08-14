@@ -1,5 +1,6 @@
 ## PasteDB CLI
-A fast, lightweight, and modern command-line interface for PasteDB — create, read, update, delete, explore, and manage your pastes directly from your terminal.
+
+> A fast, lightweight, and modern command-line interface for PasteDB — create, read, update, delete, explore, and manage your pastes directly from your terminal.
 [](https://www.npmjs.com/package/pastedb-cli)
 [](LICENSE)
 ------------------------------
