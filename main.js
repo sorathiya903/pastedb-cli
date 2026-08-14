@@ -609,6 +609,10 @@ async function main() {
             await createPaste(args[1]);
             break;
 
+        case "auth":
+            await auth();
+            break;
+
         case "get":
             await getPaste(args[1]);
             break;
