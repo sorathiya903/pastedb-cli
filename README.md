@@ -117,23 +117,31 @@ pdb me
 ## ▶️ Run Code
 Execute code snippets using PasteDB's remote code runtime engine.
 
+```
 pdb run <language> <file>
+```
 
 Examples:
 
+```
 pdb run python app.py
 pdb run javascript app.js
+```
 
 ## 🔍 Check Custom ID Availability
 Verify if a specific vanity path string is available before publishing.
 
+```
 pdb check-id my-project
+```
 
 ## 🔑 Manage API Keys
 Create, audit, and revoke access keys for other environments.
 
-pdb key create my-laptop   # Create a key
+pdb key create "my-laptop" # Create a key
+
 pdb key list               # List active keys
+
 pdb key delete <api-key>   # Delete a key
 
 ------------------------------
