@@ -1,0 +1,13 @@
+{
+  "name": "pastedb-cli",
+  "version": "0.0.1",
+  "description": "Official CLI for PasteDB",
+  "main": "main.js",
+  "bin": {
+    "pdb": "./cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
