@@ -8,7 +8,6 @@
 
 * 📤 Create pastes instantly from local files.
 * 📋 Fetch and read existing pastes in your terminal.
-* ✏️ Update content, titles, and languages easily.
 * 🗑️ Delete pastes directly from the command line.
 * 🌎 Explore public pastes without opening a browser.
 * 👤 Manage your account status and user details.
