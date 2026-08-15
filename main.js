@@ -23,32 +23,22 @@ async function ask(question) {
     });
 }
 
-async function uploadTextPaste(content, options = {}) {
+async function uploadTextPaste(content) {
 
     try {
 
         console.log("\nUploading text...");
 
-        const payload = {
-            title: options.title || "Untitled",
+        const data = await client.apiCreatePaste({
+            title: "Untitled",
             content,
-            language: options.language || "text",
+            language: "text",
             images: []
-        };
-
-        if (options.customId) {
-            payload.custom_id = options.customId;
-        }
-
-        if (options.expiry) {
-            payload.expiry = options.expiry;
-        }
-
-        const data =
-            await client.apiCreatePaste(payload);
+        });
 
         success("Text Uploaded!");
 
+        // Try common URL fields returned by APIs
         const pasteId =
             data.id ||
             data.paste_id ||
@@ -57,25 +47,19 @@ async function uploadTextPaste(content, options = {}) {
             data.customId;
 
         if (data.url) {
-
             console.log(data.url);
-
         } else if (pasteId) {
-
             console.log(
                 `https://pastedb.netlify.app/paste/${pasteId}`
             );
-
         } else {
-
             print(data);
-        }
+            }
 
     } catch (err) {
-
         handleError(err);
     }
-        }
+}
 
 async function auth() {
     console.log("");
@@ -161,73 +145,7 @@ function error(message) {
 function success(message) {
     console.log(`\n✓ ${message}\n`);
 }
-function parseCreateOptions(args) {
 
-    const options = {
-        file: null,
-        title: null,
-        expiry: null,
-        customId: null,
-        language: null
-    };
-
-    for (let i = 0; i < args.length; i++) {
-
-        const arg = args[i];
-
-        // File = first argument that isn't an option
-        if (!arg.startsWith("-") && !options.file) {
-            options.file = arg;
-            continue;
-        }
-
-        switch (arg) {
-
-            case "-t":
-            case "--title":
-                options.title = args[++i];
-                break;
-
-            case "-e":
-            case "--expiry":
-            case "--expires":
-                options.expiry = args[++i];
-                break;
-
-            case "-id":
-            case "--id":
-            case "--custom-id":
-                options.customId = args[++i];
-                break;
-
-            case "-l":
-            case "--language":
-                options.language = args[++i];
-                break;
-
-            default:
-                throw new Error(`Unknown create option: ${arg}`);
-        }
-    }
-
-    return options;
-                    }
-function normalizeLanguage(language) {
-
-    const aliases = {
-        py: "python",
-        js: "javascript",
-        ts: "typescript",
-        rb: "ruby",
-        sh: "bash",
-        yml: "yaml",
-        md: "markdown",
-        txt: "text",
-        csharp: "csharp"
-    };
-
-    return aliases[language.toLowerCase()] || language;
-}
 function getLanguage(filename) {
     const ext = path.extname(filename).toLowerCase();
 
@@ -449,7 +367,7 @@ async function chooseCreateSource() {
 // Commands
 // ─────────────────────────────────────────────
 
-async function createPaste(file, options = {}) {
+async function createPaste(file) {
 
     // ==========================================
     // INTERACTIVE MODE
@@ -463,16 +381,19 @@ async function createPaste(file, options = {}) {
             return;
         }
 
+        // File selected
         if (source.type === "file") {
-            return createPaste(source.value, options);
+            return createPaste(source.value);
         }
 
-        return uploadTextPaste(source.value, options);
+        // Raw text / clipboard
+        return uploadTextPaste(source.value);
     }
 
 
     // ==========================================
-    // FILE MODE
+    // NORMAL FILE MODE
+    // pdb create app.js
     // ==========================================
 
     if (!fs.existsSync(file)) {
@@ -489,39 +410,20 @@ async function createPaste(file, options = {}) {
 
         const content = fs.readFileSync(file, "utf8");
 
-        // CLI option overrides automatic detection
-        const language =
-    options.language
-        ? normalizeLanguage(options.language)
-        : getLanguage(file);
+        const language = getLanguage(file);
 
-        // CLI title overrides filename
-        const title =
-            options.title ||
-            path.basename(file);
+        const title = path.basename(file);
 
-        const payload = {
+        const data = await client.apiCreatePaste({
             title,
             content,
             language,
             images: []
-        };
-
-        // Optional custom ID
-        if (options.customId) {
-            payload.custom_id = options.customId;
-        }
-
-        // Optional expiry
-        if (options.expiry) {
-            payload.expiry = options.expiry;
-        }
-
-        const data =
-            await client.apiCreatePaste(payload);
+        });
 
         success("Paste created!");
 
+        // Try common URL fields returned by APIs
         const pasteId =
             data.id ||
             data.paste_id ||
@@ -530,26 +432,19 @@ async function createPaste(file, options = {}) {
             data.customId;
 
         if (data.url) {
-
             console.log(data.url);
-
         } else if (pasteId) {
-
             console.log(
                 `https://pastedb.netlify.app/paste/${pasteId}`
             );
-
         } else {
-
             print(data);
-        }
+                }
 
     } catch (err) {
-
         handleError(err);
     }
 }
-
 async function getPaste(id) {
 
     if (!id) {
@@ -937,27 +832,9 @@ async function main() {
 
     switch (command) {
 
-        case "create": {
-
-    try {
-
-        const createArgs = args.slice(1);
-
-        const options =
-            parseCreateOptions(createArgs);
-
-        await createPaste(
-            options.file,
-            options
-        );
-
-    } catch (err) {
-
-        error(err.message);
-    }
-
-    break;
-        }
+        case "create":
+            await createPaste(args[1]);
+            break;
 
         case "auth":
             await auth();
