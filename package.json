@@ -1,6 +1,6 @@
 {
   "name": "pastedb-cli",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "Official CLI for PasteDB",
   "main": "main.js",
   "keywords": ["pastedb", "pastedb cli", "pastebin", "pastebin cli", "cli", "command line", "code sharing", "text sharing", "developer tools", "code snippets", "paste tool", "terminal", "node cli", "javascript cli"],
