@@ -419,7 +419,7 @@ print(typeof data.results)
         );
 
         console.log(
-            "↑ ↓ Navigate   Ctrl+Enter Open   d Delete   / Search   r Refresh   q Quit"
+            "↑ ↓ Navigate   O Open   d Delete   / Search   r Refresh   q Quit"
         );
     }
 
@@ -602,17 +602,23 @@ print(typeof data.results)
             }
 
             // Search
-            if (key.sequence === "/" || key.name === "/") {
+            if (key.name === "/") {
 
-                await search();
+    process.stdin.setRawMode(false);
 
-                process.stdin.setRawMode(true);
+    const query = await ask("\nSearch pastes: ");
 
-                render();
+    searchText = query.trim();
 
-                return;
+    applySearch();
+    selected = 0;
+
+    process.stdin.setRawMode(true);
+
+    render();
+
+    return;
             }
-
             // Refresh
             if (key.name === "r") {
 
@@ -1162,7 +1168,7 @@ Commands:
 
       Controls:
         ↑ ↓        Navigate(Up and Down Arrow)
-        O.         Open paste
+        O          Open paste
         /          Search
         d          Delete
         r          Refresh
@@ -1236,7 +1242,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.1.8 by Aditya Sorathiya");
+    console.log("PasteDB CLI v0.1.9 by Aditya Sorathiya");
 }
 
 
