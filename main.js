@@ -62,7 +62,7 @@ function getPasteTitle(paste) {
 }
 
 function getPasteLanguage(paste) {
-    return paste.paste.syntax || "text";
+    return paste.syntax || "text";
 }
 
 function openUrl(url) {
@@ -277,17 +277,14 @@ if (typeof data === "string") {
     // Handle different possible API response formats
     let pastesList;
 
-    if (Array.isArray(data)) {
-        pastesList = data;
-    } else if (Array.isArray(data.pastes)) {
-        pastesList = data.pastes;
-    } else if (Array.isArray(data.data)) {
-        pastesList = data.data;
-    } else {
+    if (Array.isArray(data.results)) {
+        pastesList = data.results;
+     } else {
         console.log("Unexpected API response:\n");
-        print(data);
+       print(Array.isArray(data.results))
+print(typeof data.results)
         return;
-    }
+}
 
     if (pastesList.length === 0) {
         console.log("┌──────────────────────────────────────┐");
@@ -382,10 +379,6 @@ if (typeof data === "string") {
                 `      Language: ${language}`
             );
 
-            console.log(
-                `      Created:  ${formatDate(created)}`
-            );
-
             if (preview) {
                 console.log(
                     `      Preview:  ${preview}`
@@ -400,7 +393,7 @@ if (typeof data === "string") {
         );
 
         console.log(
-            "↑ ↓ Navigate   Enter Open   d Delete   / Search   r Refresh   q Quit"
+            "↑ ↓ Navigate   Ctrl+Enter Open   d Delete   / Search   r Refresh   q Quit"
         );
     }
 
@@ -541,7 +534,7 @@ if (typeof data === "string") {
             }
 
             // Open
-            if (key.name === "return") {
+            if (key.name === "o" || key.sequence === "o") {
 
                 const paste = filtered[selected];
 
@@ -583,7 +576,7 @@ if (typeof data === "string") {
             }
 
             // Search
-            if (key.name === "/") {
+            if (key.sequence === "/" || key.name === "/") {
 
                 await search();
 
@@ -973,27 +966,6 @@ async function updatePaste(id, file) {
 }
 
 
-async function stats(id) {
-
-    if (!id) {
-        return error(
-            "Usage:\n  pdb stats <paste-id>"
-        );
-    }
-
-    try {
-
-        const data = await client.pasteStats(id);
-
-        console.log("\nPaste statistics:\n");
-
-        print(data);
-
-    } catch (err) {
-        handleError(err);
-    }
-}
-
 
 async function explore() {
 
@@ -1163,12 +1135,12 @@ Commands:
       Browse all your PasteDB pastes interactively
 
       Controls:
-        ↑ ↓       Navigate
-        Enter     Open paste
-        /         Search
-        d         Delete
-        r         Refresh
-        q         Quit
+        ↑ ↓        Navigate(Up and Down Arrow)
+        O.         Open paste
+        /          Search
+        d          Delete
+        r          Refresh
+        q          Quit
 
 
   get <id>
@@ -1238,7 +1210,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.1.7 by Aditya Sorathiya");
+    console.log("PasteDB CLI v0.1.8 by Aditya Sorathiya");
 }
 
 
