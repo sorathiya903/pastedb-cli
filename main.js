@@ -35,30 +35,43 @@ function formatDate(date) {
 }
 
 function getPastePreview(paste) {
-    const content =
-        paste.content ||
-        paste.text ||
-        paste.description ||
-        "";
+    const content = paste.content;
 
-    return String(content)
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 100);
+    if (typeof content === "string") {
+        return content
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 100);
+    }
+
+    if (content && typeof content === "object") {
+        return "[Encrypted content]";
+    }
+
+    return "";
 }
-
 function getPasteId(paste) {
     return (
         paste.custom_id||
         paste.paste_id ||
         paste.pasteId ||
-        paste.custom_id ||
         paste._id
     );
 }
 
 function getPasteTitle(paste) {
-    return paste.title || "Untitled";
+    const title = paste.title;
+
+    if (typeof title === "string") {
+        return title;
+    }
+
+    // Encrypted/object title
+    if (title && typeof title === "object") {
+        return "[Encrypted paste]";
+    }
+
+    return "Untitled";
 }
 
 function getPasteLanguage(paste) {
@@ -305,29 +318,42 @@ print(typeof data.results)
 
     function applySearch() {
 
-        const query = searchText.toLowerCase().trim();
+    const query = String(searchText).toLowerCase().trim();
 
-        if (!query) {
-            filtered = [...pastesList];
-            return;
-        }
-
-        filtered = pastesList.filter(paste => {
-
-            const title = getPasteTitle(paste).toLowerCase();
-            const id = String(getPasteId(paste) || "").toLowerCase();
-            const language = getPasteLanguage(paste).toLowerCase();
-            const content = String(paste.content || "").toLowerCase();
-
-            return (
-                title.includes(query) ||
-                id.includes(query) ||
-                language.includes(query) ||
-                content.includes(query)
-            );
-        });
+    if (!query) {
+        filtered = [...pastesList];
+        return;
     }
 
+    filtered = pastesList.filter(paste => {
+
+        const title =
+            typeof paste.title === "string"
+                ? paste.title.toLowerCase()
+                : "";
+
+        const id =
+            String(getPasteId(paste) || "").toLowerCase();
+
+        const language =
+            typeof paste.syntax === "string"
+                ? paste.syntax.toLowerCase()
+                : "";
+
+        // Only search plaintext content.
+        const content =
+            typeof paste.content === "string"
+                ? paste.content.toLowerCase()
+                : "";
+
+        return (
+            title.includes(query) ||
+            id.includes(query) ||
+            language.includes(query) ||
+            content.includes(query)
+        );
+    });
+    }
     function render() {
 
         console.clear();
