@@ -49,11 +49,11 @@ function getPastePreview(paste) {
 
 function getPasteId(paste) {
     return (
-        paste.id ||
+        paste.custom_id||
         paste.paste_id ||
         paste.pasteId ||
         paste.custom_id ||
-        paste.customId
+        paste._id
     );
 }
 
@@ -62,7 +62,7 @@ function getPasteTitle(paste) {
 }
 
 function getPasteLanguage(paste) {
-    return paste.language || "text";
+    return paste.paste.syntax || "text";
 }
 
 function openUrl(url) {
@@ -1230,7 +1230,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.1.5 by Aditya Sorathiya");
+    console.log("PasteDB CLI v0.1.6 by Aditya Sorathiya");
 }
 
 
