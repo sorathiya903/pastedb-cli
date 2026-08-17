@@ -22,7 +22,63 @@ async function ask(question) {
         });
     });
 }
+function formatDate(date) {
+    if (!date) return "Unknown date";
 
+    const d = new Date(date);
+
+    if (isNaN(d.getTime())) {
+        return String(date);
+    }
+
+    return d.toLocaleString();
+}
+
+function getPastePreview(paste) {
+    const content =
+        paste.content ||
+        paste.text ||
+        paste.description ||
+        "";
+
+    return String(content)
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 100);
+}
+
+function getPasteId(paste) {
+    return (
+        paste.id ||
+        paste.paste_id ||
+        paste.pasteId ||
+        paste.custom_id ||
+        paste.customId
+    );
+}
+
+function getPasteTitle(paste) {
+    return paste.title || "Untitled";
+}
+
+function getPasteLanguage(paste) {
+    return paste.language || "text";
+}
+
+function openUrl(url) {
+    try {
+        if (process.platform === "win32") {
+            execFileSync("cmd", ["/c", "start", "", url]);
+        } else if (process.platform === "darwin") {
+            execFileSync("open", [url]);
+        } else {
+            execFileSync("xdg-open", [url]);
+        }
+    } catch {
+        console.log("\nOpen this URL manually:");
+        console.log(url);
+    }
+}
 async function uploadTextPaste(content) {
 
     try {
@@ -196,7 +252,389 @@ function getLanguage(filename) {
 
     return languages[ext] || "text";
 }
+async function pastes() {
 
+    let data;
+
+    try {
+        console.log("\nFetching your pastes...\n");
+
+        data = await client.apiUserPastes();
+
+    } catch (err) {
+        handleError(err);
+        return;
+    }
+
+    // Handle different possible API response formats
+    let pastesList;
+
+    if (Array.isArray(data)) {
+        pastesList = data;
+    } else if (Array.isArray(data.pastes)) {
+        pastesList = data.pastes;
+    } else if (Array.isArray(data.data)) {
+        pastesList = data.data;
+    } else {
+        console.log("Unexpected API response:\n");
+        print(data);
+        return;
+    }
+
+    if (pastesList.length === 0) {
+        console.log("┌──────────────────────────────────────┐");
+        console.log("│              PasteDB                 │");
+        console.log("├──────────────────────────────────────┤");
+        console.log("│ You don't have any pastes yet.       │");
+        console.log("│                                      │");
+        console.log("│ Create one with:                     │");
+        console.log("│   pdb create <file>                  │");
+        console.log("└──────────────────────────────────────┘\n");
+        return;
+    }
+
+    let selected = 0;
+    let filtered = [...pastesList];
+    let searchMode = false;
+    let searchText = "";
+
+    function applySearch() {
+
+        const query = searchText.toLowerCase().trim();
+
+        if (!query) {
+            filtered = [...pastesList];
+            return;
+        }
+
+        filtered = pastesList.filter(paste => {
+
+            const title = getPasteTitle(paste).toLowerCase();
+            const id = String(getPasteId(paste) || "").toLowerCase();
+            const language = getPasteLanguage(paste).toLowerCase();
+            const content = String(paste.content || "").toLowerCase();
+
+            return (
+                title.includes(query) ||
+                id.includes(query) ||
+                language.includes(query) ||
+                content.includes(query)
+            );
+        });
+    }
+
+    function render() {
+
+        console.clear();
+
+        console.log("╭──────────────────────────────────────────────────────────────╮");
+        console.log("│                         PasteDB                              │");
+        console.log("│                       Your Pastes                            │");
+        console.log("╰──────────────────────────────────────────────────────────────╯");
+
+        console.log(
+            `\n  ${filtered.length} paste${filtered.length === 1 ? "" : "s"}`
+        );
+
+        if (searchText) {
+            console.log(`  Search: "${searchText}"`);
+        }
+
+        console.log("");
+
+        if (filtered.length === 0) {
+            console.log("  No pastes found.");
+        }
+
+        filtered.forEach((paste, index) => {
+
+            const id = getPasteId(paste);
+            const title = getPasteTitle(paste);
+            const language = getPasteLanguage(paste);
+            const preview = getPastePreview(paste);
+
+            const created =
+                paste.created_at ||
+                paste.createdAt ||
+                paste.date;
+
+            const isSelected = index === selected;
+
+            console.log(
+                isSelected
+                    ? `  ❯ ${title}`
+                    : `    ${title}`
+            );
+
+            console.log(
+                `      ID:       ${id || "unknown"}`
+            );
+
+            console.log(
+                `      Language: ${language}`
+            );
+
+            console.log(
+                `      Created:  ${formatDate(created)}`
+            );
+
+            if (preview) {
+                console.log(
+                    `      Preview:  ${preview}`
+                );
+            }
+
+            console.log("");
+        });
+
+        console.log(
+            "──────────────────────────────────────────────────────────────"
+        );
+
+        console.log(
+            "↑ ↓ Navigate   Enter Open   d Delete   / Search   r Refresh   q Quit"
+        );
+    }
+
+    async function deleteSelected() {
+
+        const paste = filtered[selected];
+
+        if (!paste) return;
+
+        const id = getPasteId(paste);
+
+        if (!id) {
+            console.log("\nCannot determine paste ID.");
+            return;
+        }
+
+        const title = getPasteTitle(paste);
+
+        process.stdin.setRawMode(false);
+
+        console.log(
+            `\nDelete "${title}" (${id})?`
+        );
+
+        const answer = await ask(
+            "Type 'yes' to confirm: "
+        );
+
+        if (answer.toLowerCase() !== "yes") {
+            console.log("\nCancelled.");
+            return;
+        }
+
+        try {
+
+            await client.apiDeletePaste(id);
+
+            console.log("\n✓ Paste deleted.");
+
+            pastesList = pastesList.filter(
+                p => getPasteId(p) !== id
+            );
+
+            applySearch();
+
+            if (selected >= filtered.length) {
+                selected = Math.max(0, filtered.length - 1);
+            }
+
+        } catch (err) {
+            console.log("\n✗ Failed to delete paste.");
+            console.log(err.message);
+        }
+    }
+
+    async function search() {
+
+        process.stdin.setRawMode(false);
+
+        const query = await ask(
+            "\nSearch pastes: "
+        );
+
+        searchText = query;
+
+        applySearch();
+        selected = 0;
+    }
+
+    render();
+
+    readline.emitKeypressEvents(process.stdin);
+    process.stdin.setRawMode(true);
+
+    return new Promise(resolve => {
+
+        const onKeypress = async (_, key) => {
+
+            if (!key) return;
+
+            // Ctrl+C
+            if (
+                key.ctrl &&
+                key.name === "c"
+            ) {
+                process.stdin.setRawMode(false);
+                process.stdin.removeListener(
+                    "keypress",
+                    onKeypress
+                );
+                console.clear();
+                resolve();
+                return;
+            }
+
+            // Quit
+            if (key.name === "q") {
+
+                process.stdin.setRawMode(false);
+
+                process.stdin.removeListener(
+                    "keypress",
+                    onKeypress
+                );
+
+                console.clear();
+
+                resolve();
+                return;
+            }
+
+            // Up
+            if (key.name === "up") {
+
+                if (filtered.length > 0) {
+                    selected =
+                        selected <= 0
+                            ? filtered.length - 1
+                            : selected - 1;
+                }
+
+                render();
+                return;
+            }
+
+            // Down
+            if (key.name === "down") {
+
+                if (filtered.length > 0) {
+                    selected =
+                        selected >= filtered.length - 1
+                            ? 0
+                            : selected + 1;
+                }
+
+                render();
+                return;
+            }
+
+            // Open
+            if (key.name === "return") {
+
+                const paste = filtered[selected];
+
+                if (!paste) return;
+
+                const id = getPasteId(paste);
+
+                if (!id) return;
+
+                const url =
+                    `https://pastedb.netlify.app/paste/${id}`;
+
+                process.stdin.setRawMode(false);
+
+                console.log(`\nOpening ${url}...\n`);
+
+                openUrl(url);
+
+                setTimeout(() => {
+                    process.stdin.setRawMode(true);
+                    render();
+                }, 500);
+
+                return;
+            }
+
+            // Delete
+            if (key.name === "d") {
+
+                await deleteSelected();
+
+                if (filtered.length > 0) {
+                    process.stdin.setRawMode(true);
+                }
+
+                render();
+
+                return;
+            }
+
+            // Search
+            if (key.name === "/") {
+
+                await search();
+
+                process.stdin.setRawMode(true);
+
+                render();
+
+                return;
+            }
+
+            // Refresh
+            if (key.name === "r") {
+
+                process.stdin.setRawMode(false);
+
+                try {
+
+                    console.clear();
+
+                    console.log(
+                        "\nRefreshing your pastes...\n"
+                    );
+
+                    const fresh =
+                        await client.apiUserPastes();
+
+                    if (Array.isArray(fresh)) {
+                        pastesList = fresh;
+                    } else if (Array.isArray(fresh.pastes)) {
+                        pastesList = fresh.pastes;
+                    } else if (Array.isArray(fresh.data)) {
+                        pastesList = fresh.data;
+                    }
+
+                    applySearch();
+
+                    selected = 0;
+
+                } catch (err) {
+
+                    console.log(
+                        `\n✗ ${err.message}`
+                    );
+                }
+
+                process.stdin.setRawMode(true);
+
+                render();
+
+                return;
+            }
+        };
+
+        process.stdin.on(
+            "keypress",
+            onKeypress
+        );
+    });
+        }
 async function getClipboardText() {
     try {
         // Android / Termux
@@ -713,6 +1151,17 @@ Commands:
       Example:
         pdb create app.py
 
+  pastes
+      Browse all your PasteDB pastes interactively
+
+      Controls:
+        ↑ ↓       Navigate
+        Enter     Open paste
+        /         Search
+        d         Delete
+        r         Refresh
+        q         Quit
+
 
   get <id>
       Get a paste
@@ -831,6 +1280,10 @@ async function main() {
 
         case "auth":
             await auth();
+            break;
+
+        case "pastes":
+            await pastes();
             break;
 
         case "get":
