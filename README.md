@@ -14,6 +14,7 @@
 * 🔑 Provision API keys dynamically.
 * ▶️ Execute code through PasteDB's remote run service.
 * 🔍 Validate custom IDs for availability instantly.
+* 🗂️ Manage and browse your pastes interactively from the terminal
 
 ------------------------------
 ## 📦 Installation
@@ -110,7 +111,7 @@ Enter your content and press Ctrl+D when you're finished.
 
 ### 📋 Clipboard
 
-Choose First item from clipboard to upload the current clipboard content.
+Selects First item from clipboard to upload the current clipboard content.
 
 Before uploading, PasteDB shows you exactly what will be uploaded:
 
@@ -134,6 +135,70 @@ Print the raw contents of a specific paste directly to stdout.
 ```
 pdb get abc123
 ```
+
+## 🗂️ Manage Pastes Interactively
+
+Manage your PasteDB pastes directly from your terminal with the interactive paste manager.
+
+```bash
+pdb pastes
+```
+
+The interactive interface lets you:
+
+📋 Browse all your pastes.
+
+⬆️⬇️ Navigate between pastes using the arrow keys.
+
+🌐 Open the selected paste directly in your browser.
+
+🗑️ Delete pastes without leaving the terminal.
+
+🔄 Refresh your paste list.
+
+🔐 Recognizes encrypted/private pastes without displaying their encrypted content.
+
+Controls
+
+```
+↑ ↓           Navigate between pastes
+Enter         Open the selected paste
+d             Delete the selected paste
+r             Refresh the paste list
+q             Quit
+Ctrl+C        Exit
+```
+
+Example of `pdb pastes`:
+
+```
+╭──────────────────────────────────────────────────────────────╮
+│                         PasteDB                              │
+│                       Your Pastes                            │
+╰──────────────────────────────────────────────────────────────╯
+
+  12 pastes
+
+  ❯ app.py
+      ID:       abc123
+      Language: python
+      Preview:  print("Hello from PasteDB!")
+
+    website.html
+      ID:       xyz789
+      Language: html
+      Preview:  <!DOCTYPE html>...
+
+    [Encrypted paste]
+      ID:       private123
+      Language: text
+      Preview:  [Encrypted content]
+
+──────────────────────────────────────────────────────────────
+↑ ↓ Navigate   O Open   d Delete   r Refresh   q Quit
+```
+
+This provides a convenient way to manage your pastes without opening the PasteDB website.
 
 ## ✏️ Update a Paste
 Overwrite an existing paste's content, language settings, and title with a local file.
@@ -219,6 +284,8 @@ pdb key delete <api-key>   # Delete a key
 | pdb key list | Review all connected keys |
 | pdb key delete <key> | Revoke an API token |
 | pdb help / -h | Show global help instructions |
+| pdb pastes | Interactively browse, open, refresh, and delete your pastes |
+
 
 ------------------------------
 ## 🔒 Security
