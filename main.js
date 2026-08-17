@@ -260,7 +260,15 @@ async function pastes() {
         console.log("\nFetching your pastes...\n");
 
         data = await client.apiUserPastes();
-
+if (typeof data === "string") {
+    try {
+        data = JSON.parse(data);
+    } catch {
+        console.log("API returned invalid JSON.");
+        console.log(data);
+        return;
+    }
+}
     } catch (err) {
         handleError(err);
         return;
@@ -1230,7 +1238,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.1.6 by Aditya Sorathiya");
+    console.log("PasteDB CLI v0.1.7 by Aditya Sorathiya");
 }
 
 
