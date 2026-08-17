@@ -735,13 +735,6 @@ Commands:
         pdb delete abc123
 
 
-  stats <id>
-      Show paste statistics
-
-      Example:
-        pdb stats abc123
-
-
   explore
       Explore public pastes
 
@@ -788,7 +781,7 @@ Other:
 
 
 function showVersion() {
-    console.log("PasteDB CLI v0.1.4 by Aditya Sorathiya");
+    console.log("PasteDB CLI v0.1.5 by Aditya Sorathiya");
 }
 
 
